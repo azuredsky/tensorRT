@@ -29,7 +29,8 @@ bool Resnet::initSession(int initOrder) {
 std::vector<float> Resnet::predOneImage(const cv::Mat &image) {
     assert(mInputParams.BatchSize==1);
     common::BufferManager bufferManager(mCudaEngine, 1);
-    float elapsedTime = infer(std::vector<std::vector<float>>{preProcess(std::vector<cv::Mat>{image})}, bufferManager);
+    cudaStream_t stream;
+    float elapsedTime = infer(std::vector<std::vector<float>>{preProcess(std::vector<cv::Mat>{image})}, bufferManager, stream);
     gLogInfo << "Infer time is "<< elapsedTime << "ms" << std::endl;
     std::vector<float> prob = postProcess(bufferManager);
     return prob;

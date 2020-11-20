@@ -17,6 +17,7 @@ link_directories(${PROJECT_SOURCE_DIR}/source)
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 
 # find opencv
+set(OpenCV_DIR /work/local/opencv-3.4.3/share/OpenCV)
 find_package(OpenCV REQUIRED)
 if (OpenCV_FOUND)
     message(STATUS "OpenCV FOUND")
@@ -51,8 +52,24 @@ set(PSENET ${TRT} ${INT8} source/psenet.cpp)
 set(PSENETV2 ${TRT} ${INT8} source/psenetv2.cpp)
 set(SIMPLEPOSE ${TRT} ${INT8} source/simplePose.cpp)
 
-#set(CV_LIB libopencv_core.so libopencv_imgproc.so libopencv_imgcodecs.so) // 主要用到这几个
-set(TRT_LIB libnvinfer.so.7.0.0 libnvonnxparser.so.7.0.0 cuda.so)
+#set(CV_LIB libopencv_world.so) // 主要用到这几个
+set(TRT_SDK_ROOT "/work/local/TensorRT-7.0.0.11" CACHE PATH "NVIDIA TensorRT SDK root path")
+include(${PROJECT_SOURCE_DIR}/cmake/FindTRT.cmake)
+set(TRT_LIB ${TRT_LIBRARY})
+link_directories(${TRT_SDK_ROOT}/lib)
+
+#########################3#####################
+cuda_add_library(yolov3trt SHARED ${YOLO3})
+cuda_add_library(hourglasstrt SHARED ${HOURGLASS})
+cuda_add_library(resnettrt SHARED ${RESNET})
+cuda_add_library(fcostrt SHARED ${FCOS})
+cuda_add_library(retinanettrt SHARED ${RETINANET})
+cuda_add_library(retinafacetrt SHARED ${RETINAFACE})
+cuda_add_library(yolov5trt SHARED ${YOLO5})
+cuda_add_library(psenettrt SHARED ${PSENET})
+cuda_add_library(psenetv2trt SHARED ${PSENETV2})
+cuda_add_library(simplePosetrt SHARED ${SIMPLEPOSE})
+
 
 cuda_add_executable(yolov3 yolov3_main.cpp)
 target_link_libraries(yolov3 yolov3trt.so ${TRT_LIB} ${OpenCV_LIBRARIES} ${CUDA_LIBRARIES})
@@ -87,15 +104,5 @@ target_link_libraries(simplePose simplePosetrt.so ${TRT_LIB} ${OpenCV_LIBRARIES}
 cuda_add_executable(stream stream_main.cpp)
 target_link_libraries(stream yolov5trt.so ${TRT_LIB} ${OpenCV_LIBRARIES} ${CUDA_LIBRARIES})
 
-#########################3#####################
-cuda_add_library(yolov3trt SHARED ${YOLO3})
-cuda_add_library(hourglasstrt SHARED ${HOURGLASS})
-cuda_add_library(resnettrt SHARED ${RESNET})
-cuda_add_library(fcostrt SHARED ${FCOS})
-cuda_add_library(retinanettrt SHARED ${RETINANET})
-cuda_add_library(retinafacetrt SHARED ${RETINAFACE})
-cuda_add_library(yolov5trt SHARED ${YOLO5})
-cuda_add_library(psenettrt SHARED ${PSENET})
-cuda_add_library(psenetv2trt SHARED ${PSENETV2})
-cuda_add_library(simplePosetrt SHARED ${SIMPLEPOSE})
+
 
